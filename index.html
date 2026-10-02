@@ -34,8 +34,16 @@ const businessConfig = {
   instagram: "https://instagram.com/your_handle",      // EDIT
   address: "J24, Your street, Your city, PIN",         // EDIT — used for maps and the contact card
 
-  // PASTE YOUR GOOGLE REVIEW LINK HERE
-  googleReviewUrl: "https://g.page/r/YOUR_PLACE_ID/review",
+  // Google review link. Every "review on Google" action on the page reads this one value.
+  googleReviewUrl: "https://search.google.com/local/writereview?placeid=ChIJJZo20yEVrjsRNeReBdZZczo",
+
+  // Review journey. 4–5 stars build a review from `keywords`; 1–3 stars send private feedback about `feedbackTopics`.
+  // The review writer only uses the star rating, the keywords the customer picks and their own note.
+  review: {
+    keywords: ["Excellent service", "Friendly staff", "Great experience", "Great quality", "Good value", "Fast service",
+               "Clean and welcoming", "Helpful team", "Great products", "Easy experience", "Highly recommended", "Will visit again"],
+    feedbackTopics: ["Product / Quality", "Service", "Staff", "Pricing", "Waiting time", "Availability", "Cleanliness", "Other"]
+  },
 
   // Optional: paste a Google Maps share link. Left empty, maps are opened by searching the address.
   mapsUrl: "",
@@ -117,6 +125,9 @@ const businessConfig = {
   --shadow: 0 1px 2px rgba(16, 40, 8, .06), 0 10px 28px -12px rgba(16, 40, 8, .22);
   --display: "Avenir Next", "Segoe UI", "Helvetica Neue", Roboto, Arial, sans-serif;
   --body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --serif: ui-serif, "New York", "Iowan Old Style", "Palatino Linotype", Palatino, "Noto Serif", Georgia, serif;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --spring: cubic-bezier(.3, 1.5, .5, 1);
   --r-lg: 26px;
   --r-md: 18px;
   color-scheme: light;
@@ -322,6 +333,124 @@ label.f { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font
 }
 .toast.on { opacity: 1; transform: translate(-50%, 0); }
 
+/* ── Review journey ───────────────────────────────────
+   Lives inside the existing sheet. Serif for the editorial voice, the page's own sans for controls,
+   the logo green for confirmation only. One idea per screen, actions within thumb reach. */
+.sheet.rv { display: flex; flex-direction: column; min-height: min(86vh, 700px); min-height: min(86dvh, 700px); }
+.sheet.rv #sheet-body { flex: 1; display: flex; flex-direction: column; }
+.sheet.rv .body { flex: 1; gap: 0; }
+.sheet.rv .sheet-head { margin-bottom: 0; }
+.sheet.rv #sheet-title { font: 600 11.5px/1 var(--body); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+
+.rv-top { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; flex: 1; padding: 8px 0 56px; }
+.rv-top.sm { flex: none; gap: 0; padding: 2px 0 14px; margin-bottom: 22px; border-bottom: 1px solid var(--line); }
+.rv-ask { margin: 0 0 10px; font: 400 33px/1.1 var(--serif); letter-spacing: -.015em; text-align: center; text-wrap: balance; }
+.rv-top.sm .rv-ask { display: none; }
+.rv-cap { margin: 0; min-height: 24px; font: italic 400 17px/1.4 var(--serif); color: var(--muted); text-align: center; }
+.rv-cap.swap { animation: rv-rise .4s var(--ease) both; }
+.rv-top.sm .rv-cap { position: absolute; width: 1px; height: 1px; min-height: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.rv-stars { display: flex; justify-content: center; gap: 2px; }
+.rv-star { width: 60px; height: 60px; display: grid; place-items: center; border-radius: 50%; transition: width .36s var(--ease), height .36s var(--ease); }
+.rv-star svg {
+  width: 42px; height: 42px; fill: transparent; stroke: var(--muted); stroke-opacity: .5; stroke-width: 1.05; stroke-linejoin: round;
+  transition: fill .26s ease, stroke .26s ease, stroke-opacity .26s ease, filter .3s ease, transform .3s var(--spring), width .36s var(--ease), height .36s var(--ease);
+}
+.rv-star.lit svg { fill: var(--star); stroke: var(--star); stroke-opacity: 1; filter: drop-shadow(0 5px 9px rgba(242, 176, 30, .3)); }
+.rv-star.pop svg { animation: rv-pop .5s var(--spring) both; animation-delay: calc(var(--i) * 42ms); }
+.rv-star:active svg { transform: scale(.88); }
+@media (hover: hover) { .rv-star:hover svg { transform: scale(1.08); stroke-opacity: .9; } }
+.rv-top.sm .rv-star { width: 46px; height: 46px; }
+.rv-top.sm .rv-star svg { width: 24px; height: 24px; filter: none; }
+@keyframes rv-pop { 0% { transform: scale(.78); } 55% { transform: scale(1.16); } 100% { transform: none; } }
+@keyframes rv-rise { from { opacity: 0; transform: translateY(10px); } }
+
+.rv-stage { flex: 1; display: flex; flex-direction: column; gap: 22px; }
+.rv-stage:empty { display: none; }
+.rv-stage.in > *, .rv-stage.in > form > * { animation: rv-rise .52s var(--ease) both; }
+.rv-stage.in > :nth-child(2), .rv-stage.in > form > :nth-child(1) { animation-delay: 60ms; }
+.rv-stage.in > :nth-child(3), .rv-stage.in > form > :nth-child(2) { animation-delay: 110ms; }
+.rv-stage.in > :nth-child(4), .rv-stage.in > form > :nth-child(3) { animation-delay: 160ms; }
+.rv-stage.in > form > :nth-child(n+4) { animation-delay: 200ms; }
+
+.rv-h { margin: 0; font: 400 29px/1.14 var(--serif); letter-spacing: -.012em; text-wrap: balance; }
+.rv-h:focus { outline: none; }
+.rv-sub { margin: 10px 0 0 !important; color: var(--muted); font-size: 15px; line-height: 1.55; text-wrap: pretty; }
+.rv-eyebrow { margin: 0 0 10px !important; font: 600 11.5px/1 var(--body); letter-spacing: .18em; text-transform: uppercase; color: var(--green-ink); }
+
+.rv-set { display: flex; flex-direction: column; gap: 12px; }
+.rv-lab { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0; font-size: 15px; font-weight: 650; }
+.rv-lab i { flex: none; font-style: normal; font-weight: 400; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.rv-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.rv-tag {
+  display: inline-flex; align-items: center; gap: 9px; min-height: 46px; padding: 0 16px 0 12px;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font-size: 15px; font-weight: 500; line-height: 1.2;
+  transition: background .24s ease, color .24s ease, border-color .24s ease, box-shadow .24s ease, transform .24s var(--spring);
+}
+.rv-tag .ck { width: 18px; height: 18px; flex: none; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center; transition: background .24s ease, border-color .24s ease; }
+.rv-tag .ck svg { width: 12px; height: 12px; fill: none; stroke: var(--on-green); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 12; stroke-dashoffset: 12; transition: stroke-dashoffset .28s var(--ease) .04s; }
+.rv-tag[aria-pressed="true"] { background: var(--tile-dark); color: var(--on-tile-dark); border-color: var(--tile-dark); box-shadow: 0 8px 16px -10px rgba(16, 40, 8, .55); transform: translateY(-1px); }
+.rv-tag[aria-pressed="true"] .ck { background: var(--green); border-color: var(--green); }
+.rv-tag[aria-pressed="true"] .ck svg { stroke-dashoffset: 0; }
+.rv-tag:active { transform: scale(.96); }
+@media (hover: hover) { .rv-tag:hover { border-color: var(--muted); } }
+
+.rv-field {
+  display: block; width: 100%; min-height: 104px; padding: 14px 16px; resize: none;
+  border: 1px solid var(--line); border-radius: 16px; background: var(--bg); font-size: 16px; line-height: 1.5;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+input.rv-field { min-height: 54px; }
+.rv-field::placeholder { color: var(--muted); opacity: .75; }
+.rv-field:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 4px rgba(95, 174, 67, .16); }
+
+.rv-actions { margin-top: auto; padding-top: 8px; display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
+.rv-actions .textlink { align-self: center; text-align: center; min-height: 44px; display: inline-flex; align-items: center; }
+.rv-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.rv-row .btn { font-size: 14.5px; font-weight: 650; padding: 10px 8px; line-height: 1.2; text-align: center; }
+.rv-note { margin: 0 !important; text-align: center; font-size: 13px; color: var(--muted); }
+
+.rv-gen { flex: 1; min-height: 320px; display: flex; flex-direction: column; justify-content: center; gap: 14px; padding: 0 2px 40px; }
+.rv-gen p { margin: 0; font: 400 25px/1.2 var(--serif); letter-spacing: -.01em; opacity: 0; transform: translateY(8px); transition: opacity .36s ease, transform .46s var(--ease); }
+.rv-gen p.on { opacity: 1; transform: none; }
+.rv-gen p.was { opacity: .32; transform: none; }
+.rv-bar { height: 2px; margin-top: 14px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.rv-bar i { display: block; height: 100%; background: var(--green); transform: scaleX(0); transform-origin: left; transition: transform .46s var(--ease); }
+
+.rv-card { position: relative; margin: 0; padding: 30px 22px 16px; background: var(--bg); border: 1px solid var(--line); border-radius: 22px; transition: border-color .2s ease, box-shadow .2s ease; }
+.rv-card.editing { border-color: var(--green); box-shadow: 0 0 0 4px rgba(95, 174, 67, .16); }
+.rv-q { display: block; height: 24px; font: 400 66px/.62 var(--serif); color: var(--green-ink); user-select: none; -webkit-user-select: none; }
+.rv-text { display: block; width: 100%; margin: 0; padding: 0; border: 0; background: transparent; resize: none; font: 400 19px/1.56 var(--serif); white-space: pre-wrap; overflow-wrap: anywhere; }
+textarea.rv-text { outline: none; overflow: hidden; }
+.rv-card.sel .rv-text { user-select: all; -webkit-user-select: all; }
+.rv-card figcaption { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12px; letter-spacing: .04em; color: var(--muted); }
+.rv-mini { display: inline-flex; gap: 2px; }
+.rv-mini svg { width: 14px; height: 14px; fill: var(--line); }
+.rv-mini svg.on { fill: var(--star); }
+
+.rv-end { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 22px; padding: 12px 0 20px; }
+.rv-done { width: 60px; height: 60px; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center; color: var(--green-ink); }
+.rv-done svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 24; stroke-dashoffset: 24; animation: rv-draw .55s .2s var(--ease) forwards; }
+@keyframes rv-draw { to { stroke-dashoffset: 0; } }
+.rv-steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: flex; flex-direction: column; }
+.rv-steps li { counter-increment: s; display: flex; align-items: baseline; gap: 14px; padding: 12px 0; font-size: 15px; }
+.rv-steps li + li { border-top: 1px solid var(--line); }
+.rv-steps li::before { content: counter(s); flex: none; width: 14px; font: italic 400 18px/1 var(--serif); color: var(--green-ink); }
+
+@media (max-width: 350px) {
+  .rv-star { width: 52px; height: 52px; }
+  .rv-star svg { width: 36px; height: 36px; }
+  .rv-ask { font-size: 28px; }
+  .rv-h { font-size: 26px; }
+  .rv-gen p { font-size: 22px; }
+  .rv-row { grid-template-columns: 1fr; }
+}
+
+.rv-top[hidden] + .rv-stage { padding-top: 16px; }
+/* keep confirmations clear of the action buttons while the review sheet is open */
+.scrim.on:has(.sheet.rv) ~ .toast { bottom: auto; top: calc(env(safe-area-inset-top, 0px) + 18px); }
+
 @media (max-width: 350px) {
   .hero h1 { font-size: 40px; }
   .tile { padding: 14px; min-height: 140px; }
@@ -331,6 +460,7 @@ label.f { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
+  .rv-done svg { stroke-dashoffset: 0; }
 }
 </style>
 </head>
@@ -487,7 +617,8 @@ label.f { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font
 
   /* ── Sheet ── */
   const scrim = $("scrim"), sheet = $("sheet"); let lastFocus = null;
-  function openSheet(title, html) {
+  function openSheet(title, html, rv) {
+    sheet.classList.toggle("rv", !!rv);
     $("sheet-title").textContent = title; $("sheet-body").innerHTML = '<div class="body">' + html + "</div>";
     if (scrim.hidden) { lastFocus = document.activeElement; scrim.hidden = false; void scrim.offsetWidth; scrim.classList.add("on"); document.body.style.overflow = "hidden"; }
     sheet.scrollTop = 0; sheet.focus({ preventScroll: true });
@@ -495,6 +626,7 @@ label.f { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font
   function setBody(html) { $("sheet-body").innerHTML = '<div class="body">' + html + "</div>"; sheet.scrollTop = 0; }
   function closeSheet() {
     if (scrim.hidden) return;
+    clearTimers();
     scrim.classList.remove("on"); document.body.style.overflow = "";
     setTimeout(() => { scrim.hidden = true; $("sheet-body").innerHTML = ""; }, 260);
     if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
@@ -511,34 +643,76 @@ label.f { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font
     }
   });
 
-  /* ── Rating ── */
+  /* ── Review journey ──
+     1–2 stars: private feedback.  3 stars: neutral private feedback.
+     4–5 stars: keywords + optional note → review written only from those → edit / rewrite → copy → Google. */
+  const RVC = C.review || {};
+  const TOPICS = RVC.feedbackTopics || ["Product / Quality", "Service", "Staff", "Pricing", "Waiting time", "Availability", "Cleanliness", "Other"];
+  const TAGS = RVC.keywords || ["Excellent service", "Friendly staff", "Great experience", "Great quality", "Good value", "Fast service", "Clean and welcoming", "Helpful team", "Great products", "Easy experience", "Highly recommended", "Will visit again"];
+  const CAPTIONS = ["", "We can do better.", "We'd like to improve.", "Thanks for your feedback.", "We're glad you enjoyed it.", "That means a lot to us."];
+  const reduced = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   let rating = 0;
-  const starsHtml = (n) => '<div class="stars" role="radiogroup" aria-label="Your rating">' + [1, 2, 3, 4, 5].map((i) =>
-    '<button type="button" class="star' + (i <= n ? " lit" : "") + '" role="radio" aria-checked="' + (i === n) + '" aria-label="' + i + (i === 1 ? " star" : " stars") + '" data-act="star" data-n="' + i + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + P.star + "</svg></button>").join("") + "</div>";
-  function viewRate() { rating = 0; openSheet("Rate " + C.name, '<p class="lead center">How was your visit?</p>' + starsHtml(0) + '<p class="sub center">Tap a star to rate.</p>'); }
-  function feedbackForm(withStars) {
-    const viaWa = !(C.feedback && C.feedback.endpoint);
-    return (withStars ? starsHtml(rating) + '<p class="lead center">Sorry to hear that. We\'d love to improve.</p><p class="sub center">This goes only to the ' + esc(C.name) + " team. It is not posted publicly.</p>"
-                      : '<p class="lead">Tell us anything. It goes only to the ' + esc(C.name) + " team.</p>") +
-      '<form id="fb" novalidate style="display:contents">' +
-      '<label class="f" for="fb-what">' + (withStars ? "What went wrong?" : "What is it about?") + '<select id="fb-what"><option value="">Choose one</option>' +
-      ["Staff or service", "Waiting time", "Product quality or availability", "Pricing", "Cleanliness", "Something else"].map((o) => "<option>" + o + "</option>").join("") + "</select></label>" +
-      '<label class="f" for="fb-more">' + (withStars ? "Additional feedback" : "Your feedback") + '<textarea id="fb-more" maxlength="1000" placeholder="Tell us what happened"></textarea></label>' +
-      '<label class="f" for="fb-contact">Phone or email, if you want a reply<input id="fb-contact" type="text" autocomplete="tel" maxlength="120" placeholder="Optional"></label>' +
-      '<p class="err" id="fb-err" role="alert" hidden></p>' +
-      '<button class="btn" type="submit" id="fb-send">' + (viaWa ? icon("chat") + "Send feedback on WhatsApp" : "Send feedback") + "</button></form>";
+  const RV = { branch: "", tags: [], topics: [], note: "", more: "", contact: "", review: "", variant: 0, timers: [] };
+  const later = (fn, ms) => { RV.timers.push(setTimeout(fn, ms)); };
+  const clearTimers = () => { RV.timers.forEach(clearTimeout); RV.timers = []; };
+  const resetReview = () => { clearTimers(); rating = 0; Object.assign(RV, { branch: "", tags: [], topics: [], note: "", more: "", contact: "", review: "", variant: 0 }); };
+
+  const CHECK = '<path d="M5 12.5l4.500 4.500L19 7.500"/>';
+  const starsHtml = (n) => '<div class="rv-stars" role="radiogroup" aria-label="Your rating">' + [1, 2, 3, 4, 5].map((i) =>
+    '<button type="button" class="rv-star' + (i <= n ? " lit" : "") + '" style="--i:' + (i - 1) + '" role="radio" aria-checked="' + (i === n) + '" aria-label="' + i + (i === 1 ? " star" : " stars") + '" data-act="star" data-n="' + i + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + P.star + "</svg></button>").join("") + "</div>";
+  const miniRating = (n) => '<span class="rv-mini" role="img" aria-label="' + n + ' stars">' + [1, 2, 3, 4, 5].map((i) => '<svg viewBox="0 0 24 24" aria-hidden="true"' + (i <= n ? ' class="on"' : "") + ">" + P.star + "</svg>").join("") + "</span>";
+  const tagBtn = (t, act, list) => '<button type="button" class="rv-tag" data-act="' + act + '" data-v="' + esc(t) + '" aria-pressed="' + (list.indexOf(t) > -1) + '"><span class="ck" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M4 8.400l2.600 2.600L12 5.600"/></svg></span>' + esc(t) + "</button>";
+  const doneMark = '<span class="rv-done" aria-hidden="true"><svg viewBox="0 0 24 24">' + CHECK + "</svg></span>";
+
+  function setStage(html, o) {
+    const st = $("rv-stage"), top = $("rv-top"); if (!st) return;
+    o = o || {};
+    if (top) { top.hidden = !!o.hideTop; top.classList.add("sm"); }
+    st.classList.remove("in"); st.innerHTML = html; void st.offsetWidth; st.classList.add("in");
+    sheet.scrollTop = 0;
+    if (o.focus) { const h = st.querySelector(".rv-h"); if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); } }
   }
-  function onStar(n, el) {
-    rating = n;
-    if (n >= 4) {
-      setBody(starsHtml(n) + '<div class="heart center" aria-hidden="true">❤️</div><p class="lead center">Glad you enjoyed your experience!</p><p class="sub center">A quick Google review helps other people find us.</p>' +
-        '<a class="btn" id="google-review" href="' + esc(C.googleReviewUrl) + '" target="_blank" rel="noopener">' + icon("star") + "Leave us a Google review</a>");
-    } else setBody(feedbackForm(true));
-    const lit = sheet.querySelector('.star[data-n="' + n + '"]'); if (lit) { lit.classList.add("pop"); lit.focus({ preventScroll: true }); }
+
+  function viewRate() {
+    resetReview();
+    openSheet(C.name + " · Your visit",
+      '<div class="rv-top" id="rv-top"><h3 class="rv-ask">How was your visit?</h3>' + starsHtml(0) +
+      '<p class="rv-cap" id="rv-cap" aria-live="polite">Tap a star to rate.</p></div><div class="rv-stage" id="rv-stage"></div>', true);
+  }
+
+  function onStar(n) {
+    if (!$("rv-top")) return;
+    rating = n; clearTimers();
+    sheet.querySelectorAll(".rv-star").forEach((b, i) => {
+      const on = i < n; b.classList.remove("pop"); b.classList.toggle("lit", on); b.setAttribute("aria-checked", String(i + 1 === n));
+      if (on) { void b.offsetWidth; b.classList.add("pop"); }
+    });
+    const cap = $("rv-cap"); cap.textContent = CAPTIONS[n]; cap.classList.remove("swap"); void cap.offsetWidth; cap.classList.add("swap");
+    const branch = n <= 2 ? "low" : n === 3 ? "mid" : "high";
+    if (branch === RV.branch) return;                       // same route (1↔2, 4↔5): keep what the customer has entered
+    const first = !RV.branch;
+    later(() => { RV.branch = branch; setStage(branch === "high" ? builderStage() : feedbackStage(branch)); }, reduced ? 0 : first ? 620 : 160);
+  }
+
+  /* 1–3 stars and the "Feedback" button: private, never sent to Google */
+  function feedbackStage(kind) {
+    const viaWa = !(C.feedback && C.feedback.endpoint), n = esc(C.name);
+    const head = kind === "low" ? ["We'd love to make this better.", "Tell us what went wrong. Your feedback goes directly to " + n + " and is not posted publicly."]
+      : kind === "mid" ? ["Thanks for your feedback.", "What could have made your experience a little better?"]
+      : ["Tell us anything.", "Your feedback goes directly to " + n + " and is not posted publicly."];
+    const ask = kind === "low" ? "What went wrong?" : kind === "mid" ? "What could be better?" : "What is it about?";
+    return '<div><h3 class="rv-h">' + head[0] + '</h3><p class="rv-sub">' + head[1] + "</p></div>" +
+      '<form id="fb" novalidate style="display:contents">' +
+      '<div class="rv-set" role="group" aria-labelledby="fb-what-l"><p class="rv-lab" id="fb-what-l">' + ask + '</p><div class="rv-tags">' + TOPICS.map((t) => tagBtn(t, "topic", RV.topics)).join("") + "</div></div>" +
+      '<label class="rv-set" for="fb-more"><span class="rv-lab">Tell us more</span><textarea class="rv-field" id="fb-more" maxlength="1000" placeholder="' + (kind === "low" ? "What happened?" : "In your own words") + '">' + esc(RV.more) + "</textarea></label>" +
+      '<label class="rv-set" for="fb-contact"><span class="rv-lab">Phone or email if you\'d like us to get back to you</span><input class="rv-field" id="fb-contact" type="text" autocomplete="tel" maxlength="120" placeholder="Optional" value="' + esc(RV.contact) + '"></label>' +
+      '<p class="err" id="fb-err" role="alert" hidden></p>' +
+      '<div class="rv-actions"><button class="btn" type="submit" id="fb-send">Send private feedback</button>' +
+      '<p class="rv-note">' + (viaWa ? "Sent through WhatsApp, straight to " + n + "." : "Goes directly to " + n + ". Not posted publicly.") + "</p></div></form>";
   }
   function saveLocal(entry) { try { const k = "feedback:" + C.name, a = JSON.parse(localStorage.getItem(k) || "[]"); a.push(entry); localStorage.setItem(k, JSON.stringify(a)); } catch (e) {} }
   async function sendFeedback(form) {
-    const what = $("fb-what").value, more = $("fb-more").value.trim(), contact = $("fb-contact").value.trim(), err = $("fb-err"), btn = $("fb-send");
+    const what = RV.topics.join(", "), more = $("fb-more").value.trim(), contact = $("fb-contact").value.trim(), err = $("fb-err"), btn = $("fb-send");
     if (!what && !more) { err.textContent = "Choose a topic or write a few words so we know what to fix."; err.hidden = false; return; }
     err.hidden = true;
     const entry = { business: C.name, rating: rating || null, topic: what, feedback: more, contact: contact, page: location.href, time: new Date().toISOString() };
@@ -549,19 +723,150 @@ label.f { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font
       try {
         const r = await fetch(ep, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(entry) });
         if (!r.ok) throw new Error(r.status);
-        setBody('<div class="heart center" aria-hidden="true">🙏</div><p class="lead center">Feedback sent. Thank you.</p><p class="sub center">We read every message and will use it to improve.</p><button class="btn ghost" type="button" data-act="close">Done</button>');
+        setStage('<div class="rv-end">' + doneMark + '<div><h3 class="rv-h">Thank you for telling us.</h3><p class="rv-sub">Your feedback has been received by ' + esc(C.name) + '.</p></div></div>' +
+          '<div class="rv-actions"><button class="btn ghost" type="button" data-act="close">Done</button></div>', { hideTop: true, focus: true });
       } catch (e) {
-        btn.disabled = false; btn.textContent = "Send feedback";
+        btn.disabled = false; btn.textContent = "Send private feedback";
         err.textContent = "Couldn't send. Check your connection and try again."; err.hidden = false;
       }
       return;
     }
     const msg = "Private feedback for " + C.name + (rating ? "\nRating: " + rating + "/5" : "") + (what ? "\nAbout: " + what : "") + (more ? "\n" + more : "") + (contact ? "\nContact: " + contact : "");
-    setBody('<p class="lead center">One more tap to send it.</p><p class="sub center">WhatsApp opens with your feedback filled in. Press send there and it reaches us privately.</p>' +
-      '<a class="btn" id="fb-wa" href="' + esc(waLink(msg)) + '" target="_blank" rel="noopener">' + icon("chat") + "Open WhatsApp</a>" +
-      '<button class="btn ghost" type="button" data-act="close">Done</button>');
+    setStage('<div class="rv-end"><div><h3 class="rv-h">Thank you for telling us.</h3><p class="rv-sub">One more tap to send it. WhatsApp opens with your feedback filled in. Press send there and it reaches ' + esc(C.name) + " privately.</p></div></div>" +
+      '<div class="rv-actions"><a class="btn" id="fb-wa" href="' + esc(waLink(msg)) + '" target="_blank" rel="noopener">' + icon("chat") + "Open WhatsApp</a>" +
+      '<button class="btn ghost" type="button" data-act="close">Done</button></div>', { hideTop: true, focus: true });
     window.location.href = waLink(msg);
   }
+
+  /* 4–5 stars: the review builder */
+  const countLabel = () => RV.tags.length ? RV.tags.length + " chosen" : "Choose any";
+  function builderStage() {
+    return '<div><h3 class="rv-h">That means a lot to us.</h3><p class="rv-sub">Help others discover ' + esc(C.name) + " with a quick review.</p></div>" +
+      '<div class="rv-set" role="group" aria-labelledby="rv-tags-l"><p class="rv-lab" id="rv-tags-l">What stood out to you?<i id="rv-count">' + countLabel() + '</i></p><div class="rv-tags">' + TAGS.map((t) => tagBtn(t, "tag", RV.tags)).join("") + "</div></div>" +
+      '<label class="rv-set" for="rv-note"><span class="rv-lab">Anything else you\'d like to say?<i>Optional</i></span><textarea class="rv-field" id="rv-note" maxlength="500" placeholder="In your own words">' + esc(RV.note) + "</textarea></label>" +
+      '<div class="rv-actions"><button class="btn" type="button" data-act="rv-create">Create my review</button>' +
+      '<a class="textlink" href="' + esc(C.googleReviewUrl) + '" target="_blank" rel="noopener">Or write it yourself on Google</a></div>';
+  }
+  function toggleTag(el, list) {
+    const v = el.dataset.v, i = list.indexOf(v), on = i < 0;
+    if (on) list.push(v); else list.splice(i, 1);
+    el.setAttribute("aria-pressed", String(on));
+    const c = $("rv-count"); if (c && list === RV.tags) c.textContent = countLabel();
+    const err = $("fb-err"); if (err) err.hidden = true;
+  }
+
+  /* The writer. It can only say what the customer told it: their star rating, the keywords they
+     picked and their own note, word for word. It never adds names, products, events or claims. */
+  const SAY = {
+    "Great quality":       ["the quality is great", "great quality", "the great quality"],
+    "Good value":          ["it's good value", "good value", "the good value"],
+    "Clean and welcoming": ["the place is clean and welcoming", "a clean and welcoming place", "how clean and welcoming it is"],
+    "Great products":      ["the products are great", "great products", "the great products"],
+    "Easy experience":     ["everything was easy", "an easy experience", "how easy everything was"]
+  };
+  const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const listOf = (a, oxford) => a.length < 2 ? a.join("") : a.length === 2 ? a.join(" and ") : a.slice(0, -1).join(", ") + (oxford ? ", and " : " and ") + a[a.length - 1];
+  function buildReview(v) {
+    const name = C.name, t = RV.tags, has = (k) => t.indexOf(k) > -1;
+    const known = (k) => SAY[k] || /^(Excellent service|Fast service|Friendly staff|Helpful team|Great experience|Highly recommended|Will visit again)$/.test(k);
+    if (t.some((k) => !known(k))) v = 1;                    // custom keywords are quoted as written, never rephrased
+    const items = [], seen = {};
+    t.forEach((k) => {
+      if (k === "Excellent service" || k === "Fast service") {
+        if (seen.service) return; seen.service = 1;
+        const a = listOf([has("Excellent service") && "excellent", has("Fast service") && "fast"].filter(Boolean));
+        items.push(["the service was " + a, a + " service", "the " + a + " service"]);
+      } else if (k === "Friendly staff" || k === "Helpful team") {
+        if (seen.staff) return; seen.staff = 1;
+        const f = has("Friendly staff"), h = has("Helpful team");
+        items.push(f && h ? ["the staff were friendly and helpful", "friendly and helpful staff", "the friendly and helpful staff"]
+          : f ? ["the staff were friendly", "friendly staff", "the friendly staff"] : ["the team was helpful", "a helpful team", "the helpful team"]);
+      } else if (SAY[k]) items.push(SAY[k]);
+      else if (!known(k)) { const s = k.charAt(0).toLowerCase() + k.slice(1); items.push([s, s, s]); }
+    });
+    const stars = rating === 5 ? "five" : "four";
+    const out = [has("Great experience")
+      ? ["Great experience at " + name + ".", "Had a great experience at " + name + ".", "A great experience at " + name + "."][v]
+      : [(rating === 5 ? "Really happy with " : "Happy with ") + name + ".", name + " gets " + stars + " stars from me.", cap(stars) + " stars for " + name + "."][v]];
+    const part = items.map((x) => x[v]);
+    for (let i = 0; i < part.length; i += 3) {
+      const g = part.slice(i, i + 3);
+      out.push(v === 0 ? cap(listOf(g, true)) + "."
+        : v === 1 ? cap(listOf(g)) + (i ? " too." : ".")
+        : (i ? "Same goes for " : "I liked ") + listOf(g) + ".");
+    }
+    const note = RV.note.replace(/\s+/g, " ").trim();
+    if (note) out.push(cap(note) + (/[.!?…]$/.test(note) ? "" : "."));
+    const rec = has("Highly recommended"), again = has("Will visit again");
+    if (rec && again) out.push(["Highly recommended, and I'll be back.", "I'd highly recommend " + name + " and will visit again.", "Highly recommend it. Will visit again."][v]);
+    else if (rec) out.push(["Highly recommended.", "I'd highly recommend " + name + ".", "Highly recommend it."][v]);
+    else if (again) out.push(["Will visit again.", "I'll be back.", "I'll be visiting again."][v]);
+    return out.join(" ");
+  }
+
+  function createReview(another) {
+    const n = $("rv-note"); if (n) RV.note = n.value;
+    if (another) RV.variant = (RV.variant + 1) % 3;
+    RV.review = buildReview(RV.variant);
+    clearTimers();
+    const lines = ["Understanding your experience…", "Finding the right words…", "Polishing your review…"], step = reduced ? 120 : 430;
+    setStage('<div class="rv-gen" role="status">' + lines.map((l) => "<p>" + l + "</p>").join("") + '<div class="rv-bar" aria-hidden="true"><i></i></div></div>', { hideTop: true });
+    const ps = sheet.querySelectorAll(".rv-gen p"), bar = sheet.querySelector(".rv-bar i");
+    lines.forEach((l, i) => later(() => {
+      ps.forEach((p, j) => { p.classList.toggle("on", j === i); p.classList.toggle("was", j < i); });
+      bar.style.transform = "scaleX(" + (i + 1) / 3 + ")";
+    }, 40 + i * step));
+    later(showResult, 40 + 3 * step);
+  }
+  function showResult() {
+    setStage('<div><p class="rv-eyebrow">Your review is ready.</p><h3 class="rv-h">Your words, polished.</h3></div>' +
+      '<figure class="rv-card" id="rv-card"><span class="rv-q" aria-hidden="true">“</span><p class="rv-text" id="rv-text">' + esc(RV.review) + "</p>" +
+      "<figcaption>" + miniRating(rating) + "<span>Only what you told us</span></figcaption></figure>" +
+      '<div class="rv-actions"><button class="btn" type="button" data-act="rv-go">' + icon("copy") + "Copy &amp; Continue to Google</button>" +
+      '<div class="rv-row"><button class="btn ghost" type="button" data-act="rv-edit" id="rv-edit-btn">Edit review</button><button class="btn ghost" type="button" data-act="rv-again">Write a different one</button></div>' +
+      '<button class="textlink" type="button" data-act="rv-back">Change what I picked</button></div>', { hideTop: true, focus: true });
+  }
+  const grow = (ta) => { ta.style.height = "auto"; ta.style.height = ta.scrollHeight + "px"; };
+  function toggleEdit() {
+    const card = $("rv-card"), btn = $("rv-edit-btn"), el = $("rv-text"); if (!el) return;
+    if (el.tagName === "TEXTAREA") {
+      RV.review = el.value.trim();
+      const p = document.createElement("p"); p.className = "rv-text"; p.id = "rv-text"; p.textContent = RV.review;
+      el.replaceWith(p); card.classList.remove("editing"); btn.textContent = "Edit review";
+    } else {
+      const ta = document.createElement("textarea"); ta.className = "rv-text"; ta.id = "rv-text"; ta.maxLength = 1500; ta.rows = 1;
+      ta.setAttribute("aria-label", "Your review"); ta.value = RV.review;
+      el.replaceWith(ta); card.classList.add("editing"); btn.textContent = "Done editing";
+      grow(ta); ta.focus({ preventScroll: true }); ta.setSelectionRange(ta.value.length, ta.value.length);
+    }
+  }
+  /* Copy first, then open Google in the same tap so mobile browsers allow both. */
+  function goGoogle() {
+    const el = $("rv-text"); if (el && el.tagName === "TEXTAREA") RV.review = el.value;
+    const text = RV.review.trim();
+    const copied = text ? copy(text, "Review copied.") : Promise.resolve(false);
+    let opened = false;
+    try { const w = window.open(C.googleReviewUrl, "_blank"); if (w) { opened = true; try { w.opener = null; } catch (e) {} } } catch (e) {}
+    copied.then((ok) => handoff(ok, opened, text));
+  }
+  function handoff(ok, opened, text) {
+    const head = !text ? ["Over to Google.", "Write your review there in your own words."]
+      : ok ? ["Review copied.", "Your review has been copied. Paste it into Google."]
+      : ["One more step.", "We couldn't copy it automatically. Press and hold the text below to copy it, then paste it into Google."];
+    setStage('<div class="rv-end">' + (ok ? doneMark : "") + '<div><h3 class="rv-h">' + head[0] + '</h3><p class="rv-sub">' + head[1] + "</p></div>" +
+      (text ? '<ol class="rv-steps"><li>Choose your stars on Google</li><li>Press and hold the text box, then tap Paste</li><li>Tap Post</li></ol>' : "") +
+      (text && !ok ? '<figure class="rv-card sel"><p class="rv-text">' + esc(text) + "</p></figure>" : "") + "</div>" +
+      '<div class="rv-actions"><a class="btn" id="google-review" href="' + esc(C.googleReviewUrl) + '" target="_blank" rel="noopener">' + (opened ? "Open Google again" : "Continue to Google") + "</a>" +
+      (text ? '<div class="rv-row"><button class="btn ghost" type="button" data-act="rv-copy">Copy again</button><button class="btn ghost" type="button" data-act="rv-result">Back to review</button></div>' : "") +
+      '<button class="textlink" type="button" data-act="close">Done</button></div>', { hideTop: true, focus: true });
+  }
+  document.addEventListener("input", (e) => {
+    const el = e.target, id = el && el.id;
+    if (id === "rv-note") RV.note = el.value;
+    else if (id === "fb-more") RV.more = el.value;
+    else if (id === "fb-contact") RV.contact = el.value;
+    else if (id === "rv-text") { RV.review = el.value; grow(el); }
+  });
 
   /* ── Wi-Fi ── */
   const wEsc = (s) => String(s).replace(/([\\;,:"])/g, "\\$1");
@@ -641,8 +946,17 @@ label.f { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font
   const acts = {
     rate: viewRate, wifi: viewWifi, services: viewServices, hours: viewHours, offers: viewOffers, loyalty: viewLoyalty,
     vcard: saveContact, share: share, close: closeSheet,
-    feedback: () => { rating = 0; openSheet("Private feedback", feedbackForm(false)); },
-    star: (el) => onStar(+el.dataset.n, el),
+    feedback: () => { resetReview(); openSheet(C.name + " · Private feedback", '<div class="rv-stage" id="rv-stage"></div>', true); setStage(feedbackStage("open")); },
+    star: (el) => onStar(+el.dataset.n),
+    topic: (el) => toggleTag(el, RV.topics),
+    tag: (el) => toggleTag(el, RV.tags),
+    "rv-create": () => createReview(false),
+    "rv-again": () => createReview(true),
+    "rv-edit": toggleEdit,
+    "rv-go": goGoogle,
+    "rv-result": showResult,
+    "rv-back": () => { clearTimers(); setStage(builderStage()); },
+    "rv-copy": () => copy(RV.review.trim(), "Review copied."),
     "copy-ssid": () => copy(C.wifi.ssid, "Network name copied"),
     "copy-pass": () => copy(C.wifi.password, "Password copied"),
     "toggle-pass": (el) => {
